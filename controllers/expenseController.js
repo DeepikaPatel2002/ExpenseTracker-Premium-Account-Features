@@ -10,8 +10,12 @@ exports.addExpense = async (req, res) => {
       category,
       userId: req.user.id   //  FIXED: use id not userId
     });
-    res.json(expense);
-  } catch (err) {
+
+    req.user.totalExpense+=Number(amount)
+    await req.user.save();
+    res.json({ message: 'Expense added successfully', expense });
+  } 
+  catch (err) {
     res.status(500).json({ error: 'Failed to add expense' });
   }
 };
@@ -43,15 +47,10 @@ if (!expense) {
    });
 }
 
+req.user.totalExpense-=Number(expense.amount)
+await req.user.save();
+
 await expense.destroy();
-
-
-    // const expense = await Expense.findByPk(req.params.id);
-
-    // if (!expense)
-    //    return res.status(404).json({ error: 'Expense not found' });
-
-    // await expense.destroy();
 
     res.json({ message: 'Expense deleted successfully' });
   }
