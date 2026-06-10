@@ -111,3 +111,13 @@ console.log("User from DB:", user);
 }
 
 };
+
+exports.upgradeToPremium = async (req, res) => {
+  try {
+    req.user.isPremiumUser = true;
+    await req.user.save();
+    res.json({ message: 'User upgraded to premium successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to upgrade user' });
+  }
+};

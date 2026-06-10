@@ -6,29 +6,23 @@
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <style>
     body { font-family: Arial; background-color: #f5f7fa; text-align: center; }
-    form { background: white; padding: 20px; border-radius: 10px; width: 300px; margin: 40px auto; }
-    button { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
-    #expense-list, #leaderboard { list-style: none; padding: 0; width: 300px; margin: 20px auto; text-align: left; }
-    #expense-list li, #leaderboard div { background: #e9ecef; margin: 5px 0; padding: 8px; border-radius: 5px; }
-    h3 { margin-top: 30px; }
-
-    /*  Delete button style */
-    .delete-btn {
-      background-color: orangered;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-left: 10px;
-    }
-    .delete-btn:hover {
-      background-color: #ff6347; /* tomato shade on hover */
-    }
+    form { background: white; padding: 20px; border-radius: 10px; width: 400px; margin: 20px auto; }
+    button { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+    table { width: 80%; margin: 20px auto; border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    th { background-color: #007bff; color: white; }
+    .delete-btn { background-color: orangered; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+    .delete-btn:hover { background-color: #ff6347; }
   </style>
 </head>
 <body>
-  <h2>Expense Tracker</h2>
+  <div class="header">
+    <h2 id="welcomeMessage">Welcome, King! Thank you for being a Premium Member!</h2>
+    <button id="showLeaderboard" style="background-color: #28a745; color: white;">Show Leaderboard</button>
+    <button id="downloadBtn" style="background-color: #007bff; color: white;">Download Report</button>
+    <button id="logoutBtn" style="background-color: orange; color: white;">Logout</button>
+  </div>
+
   <form id="expenseForm">
     <input type="number" id="amount" placeholder="Enter amount" required><br><br>
     <input type="text" id="description" placeholder="Enter description" required><br><br>
@@ -36,15 +30,23 @@
     <button type="submit" style="background-color: #007bff; color: white;">Add Expense</button>
   </form>
 
-  <button id="showLeaderboard" style="background-color: #28a745; color: white;">Show Leaderboard</button>
-
   <h3>Expenses</h3>
-  <ul id="expense-list"></ul>
+  <table>
+    <thead>
+      <tr>
+        <th>Amount</th>
+        <th>Category</th>
+        <th>Description</th>
+        <th>Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="expense-list"></tbody>
+  </table>
 
   <h3>Leader Board</h3>
-  <div id="leaderboard"></div>
+  <ul id="leaderboard"></ul>
 
   <script src="index.js"></script>
 </body>
 </html>
-
