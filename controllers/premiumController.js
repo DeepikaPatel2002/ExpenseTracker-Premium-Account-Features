@@ -1,17 +1,27 @@
-
-
 const User = require('../models/User');
 const Expense = require('../models/Expense');
+const sequelize = require('../config/db');  
 const { Parser } = require('json2csv');
 
 exports.getLeaderboard = async (req, res) => {
   try {
     const leaderboard = await User.findAll({
-      attributes: ['username', 'totalExpense'],
-      order: [['totalExpense', 'DESC']]
+      attributes: [
+        'id',
+        'username',
+        [sequelize.fn('SUM', sequelize.col('expenses.amount')), 'totalExpense']
+      ],
+      include: [{ model: Expense, attributes: [] }],
+      group: ['User.id'],
+      order: [[sequelize.literal('totalExpense'), 'DESC']]
     });
+
+    //  Debug log: check what data is coming back
+    console.log(JSON.stringify(leaderboard, null, 2));
+
     res.status(200).json(leaderboard);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Failed to fetch leaderboard' });
   }
 };
@@ -27,28 +37,8 @@ exports.downloadReport = async (req, res) => {
     res.attachment('expenses_report.csv');
     res.send(csv);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Failed to generate report' });
   }
 };
 
-
-// const User = require('../models/User');
-
-// exports.getLeaderboard = async (req, res) => {
-//   try {
-
-//     const leaderboard = await User.findAll({
-//       attributes: ['id', 'username', 'totalExpense'],
-//       order: [['totalExpense', 'DESC']]
-//     });
-
-//     res.status(200).json(leaderboard);
-
-//   } catch (err) {
-//     console.log(err);
-
-//     res.status(500).json({
-//       error: 'Failed to fetch leaderboard'
-//     });
-//   }
-// };
