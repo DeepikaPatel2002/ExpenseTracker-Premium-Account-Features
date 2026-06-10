@@ -11,9 +11,11 @@ exports.getLeaderboard = async (req, res) => {
         'username',
         [sequelize.fn('SUM', sequelize.col('expenses.amount')), 'totalExpense']
       ],
+
       include: [{ model: Expense, attributes: [] }],
       group: ['User.id'],
       order: [[sequelize.literal('totalExpense'), 'DESC']]
+      
     });
 
     //  Debug log: check what data is coming back
