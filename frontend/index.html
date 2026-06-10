@@ -4,32 +4,23 @@
   <meta charset="UTF-8">
   <title>Expense Tracker</title>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <style>
-    body { font-family: Arial; background-color: #f5f7fa; text-align: center; }
-    form { background: white; padding: 20px; border-radius: 10px; width: 400px; margin: 20px auto; }
-    button { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
-    table { width: 80%; margin: 20px auto; border-collapse: collapse; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-    th { background-color: #007bff; color: white; }
-    .delete-btn { background-color: orangered; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
-    .delete-btn:hover { background-color: #ff6347; }
-  </style>
+  <!-- Link external CSS -->
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="header">
     <h2 id="welcomeMessage">Welcome, King! Thank you for being a Premium Member!</h2>
-    <button id="showLeaderboard" style="background-color: #28a745; color: white;">Show Leaderboard</button>
-    <button id="downloadBtn" style="background-color: #007bff; color: white;">Download Report</button>
-    <button id="logoutBtn" style="background-color: orange; color: white;">Logout</button>
-    <button id="upgradeBtn" style="background-color: purple; color: white;">Upgrade to Premium</button>
-
+    <button id="showLeaderboard">Show Leaderboard</button>
+    <button id="downloadBtn">Download Report</button>
+    <button id="logoutBtn">Logout</button>
+    <button id="upgradeBtn">Upgrade to Premium</button>
   </div>
 
   <form id="expenseForm">
     <input type="number" id="amount" placeholder="Enter amount" required><br><br>
     <input type="text" id="description" placeholder="Enter description" required><br><br>
     <input type="text" id="category" placeholder="Enter category" required><br><br>
-    <button type="submit" style="background-color: #007bff; color: white;">Add Expense</button>
+    <button type="submit" class="primary-btn">Add Expense</button>
   </form>
 
   <h3>Expenses</h3>
@@ -47,8 +38,18 @@
   </table>
 
   <h3>Leader Board</h3>
-  <ul id="leaderboard"></ul>
+  <table id="leaderboard">
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>User</th>
+        <th>Total Expense</th>
+      </tr>
+    </thead>
+    <tbody id="leaderboard-body"></tbody>
+  </table>
 
   <script src="index.js"></script>
 </body>
 </html>
+

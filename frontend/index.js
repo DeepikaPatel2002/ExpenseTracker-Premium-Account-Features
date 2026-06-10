@@ -71,15 +71,21 @@ function addExpenseToUI(expense) {
 document.getElementById('showLeaderboard').addEventListener('click', async () => {
   const token = localStorage.getItem('token');
   try {
-    const res = await axios.get('http://localhost:4000/premium/leaderboard',
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    const leaderboard = document.getElementById('leaderboard');
-    leaderboard.innerHTML = '';
-    res.data.forEach(user => {
-      const li = document.createElement('li');
-      li.textContent = `${user.username} - ${user.totalExpense}`;
-      leaderboard.appendChild(li);
+    const res = await axios.get('http://localhost:4000/premium/leaderboard', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    const leaderboardBody = document.getElementById('leaderboard-body');
+    leaderboardBody.innerHTML = '';
+
+    res.data.forEach((user, index) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${user.username}</td>
+        <td>${user.totalExpense}</td>
+      `;
+      leaderboardBody.appendChild(tr);
     });
   } catch (err) {
     alert('Failed to load leaderboard');
