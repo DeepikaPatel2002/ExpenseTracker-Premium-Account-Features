@@ -1,3 +1,5 @@
+
+
 const User = require('../models/User');
 const Expense = require('../models/Expense');
 const sequelize = require('../config/db');  
@@ -15,7 +17,7 @@ exports.getLeaderboard = async (req, res) => {
       include: [{ model: Expense, attributes: [] }],
       group: ['User.id'],
       order: [[sequelize.literal('totalExpense'), 'DESC']]
-      
+
     });
 
     //  Debug log: check what data is coming back

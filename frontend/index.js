@@ -3,25 +3,31 @@ window.addEventListener('DOMContentLoaded', () => {
   loadExpenses();
 });
 
+
+
+// Add Expense
 // Add Expense
 document.getElementById('expenseForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const token = localStorage.getItem('token');
   const amount = document.getElementById('amount').value;
   const description = document.getElementById('description').value;
-  const category = document.getElementById('category').value;
 
   try {
-    const res = await axios.post('http://localhost:4000/expense/add',
-      { amount, description, category },
+    const res = await axios.post(
+      'http://localhost:4000/expense/add',
+      { amount, description },   //  no category here
       { headers: { Authorization: `Bearer ${token}` } }
     );
+
     addExpenseToUI(res.data.expense);
     document.getElementById('expenseForm').reset();
   } catch (err) {
     alert('Failed to add expense');
   }
 });
+
+
 
 // Load Expenses
 async function loadExpenses() {
@@ -38,6 +44,10 @@ async function loadExpenses() {
     alert('Failed to load expenses');
   }
 }
+
+
+
+
 
 // Add Expense To UI (Table Row)
 function addExpenseToUI(expense) {
@@ -67,6 +77,9 @@ function addExpenseToUI(expense) {
   expenseList.appendChild(tr);
 }
 
+
+
+
 // Leaderboard
 document.getElementById('showLeaderboard').addEventListener('click', async () => {
   const token = localStorage.getItem('token');
@@ -92,17 +105,27 @@ document.getElementById('showLeaderboard').addEventListener('click', async () =>
   }
 });
 
+
+
+
 // Download Report
 document.getElementById('downloadBtn').addEventListener('click', () => {
   const token = localStorage.getItem('token');
   window.location.href = `http://localhost:4000/premium/downloadReport?token=${token}`;
 });
 
+
+
+
 // Logout
 document.getElementById('logoutBtn').addEventListener('click', () => {
   localStorage.removeItem('token');
   window.location.href = 'login.html';
 });
+
+
+
+
 
 
 // Upgrade to Premium
