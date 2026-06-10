@@ -97,3 +97,18 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
   localStorage.removeItem('token');
   window.location.href = 'login.html';
 });
+
+
+// Upgrade to Premium
+document.getElementById('upgradeBtn').addEventListener('click', async () => {
+  const token = localStorage.getItem('token');
+  try {
+    await axios.post('http://localhost:4000/user/upgrade', {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    alert("Upgraded to premium! Please log out and log back in to refresh your token.");
+  } catch (err) {
+    alert("Failed to upgrade user");
+    console.error(err.response?.data || err);
+  }
+});
