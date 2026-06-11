@@ -1,3 +1,5 @@
+
+
 let allExpenses = [];
 let currentFilter = "all";
 let isPremiumUser = false;
@@ -181,14 +183,23 @@ async function addExpense(e) {
 function setFilter(type) {
   currentFilter = type;
   currentPage = 1;
+
+  console.log("FILTER SELECTED:", type);
+
+  document.getElementById("filter-all")?.classList.remove("filter-active");
+  document.getElementById("filter-daily")?.classList.remove("filter-active");
+  document.getElementById("filter-weekly")?.classList.remove("filter-active");
+  document.getElementById("filter-monthly")?.classList.remove("filter-active");
+
+  document.getElementById(`filter-${type}`)?.classList.add("filter-active");
+
   render();
 }
-
 // ================= FILTER DATA =================
 function filterData() {
   const today = new Date();
 
-  return allExpenses.filter(item => {
+  const result = allExpenses.filter(item => {
     const d = new Date(item.createdAt);
 
     if (currentFilter === "daily") {
@@ -208,7 +219,13 @@ function filterData() {
 
     return true;
   });
+
+  console.log("FILTER:", currentFilter, "RESULT:", result); // 👈 ADD THIS
+
+  return result;
 }
+
+
 
 // ================= RENDER =================
 function render() {
