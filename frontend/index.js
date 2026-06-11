@@ -10,11 +10,12 @@ window.addEventListener('DOMContentLoaded', () => {
 document.getElementById('expenseForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const token = localStorage.getItem('token');
-  const amount = document.getElementById('amount').value;
+  const amount = Number(document.getElementById('amount').value);
   const description = document.getElementById('description').value;
 
   try {
     const res = await axios.post(
+
       'http://localhost:4000/expense/add',
       { amount, description },   //  no category here
       { headers: { Authorization: `Bearer ${token}` } }
@@ -141,3 +142,4 @@ document.getElementById('upgradeBtn').addEventListener('click', async () => {
     console.error(err.response?.data || err);
   }
 });
+

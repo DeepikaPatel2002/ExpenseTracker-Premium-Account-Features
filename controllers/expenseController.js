@@ -4,54 +4,90 @@ const Expense = require('../models/Expense');
 const User = require('../models/User');
 const { GoogleGenAI } = require("@google/genai");
 
+
+
 // Add expense with AI categorization
+const sequelize = require('../config/db'); // IMPORTANT
+
 exports.addExpense = async (req, res) => {
+  const t = await sequelize.transaction(); // 1. START TRANSACTION
+
   try {
     const { amount, description } = req.body;
 
     let category = "Uncategorized";
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: [{ role: "user", parts: [{ text: `Suggest one category for this expense: ${description}` }]}]
-      });
 
-      console.log("Gemini raw response:", JSON.stringify(response, null, 2));
 
-      // Improved parser
-      const candidateText = response.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (candidateText) {
-        category = candidateText.replace(/Category:\s*/i, "").trim();
-      } else {
-        category = "Uncategorized";
-      }
+try {
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-      console.log("AI suggested category:", category);
-    } catch (err) {
-      console.error("AI categorization failed:", err);
-    }
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: [{
+      role: "user",
+      parts: [{
+        text: `Return ONLY ONE WORD category for this expense: ${description}`
+      }]
+    }]
+  });
 
+  console.log("FULL AI RESPONSE:", JSON.stringify(response, null, 2));
+
+  category =
+    response.text ||
+    response.candidates?.[0]?.content?.parts?.[0]?.text ||
+    "Uncategorized";
+
+  if (category.includes("\n")) {
+    category = category.split("\n")[0];
+  }
+
+  category = category.replace(/[^a-zA-Z]/g, "").trim();
+
+} catch (err) {
+  console.error("AI failed:", err);
+}
+
+
+    // 2. CREATE EXPENSE inside transaction
     const expense = await Expense.create({
       amount,
       description,
       category,
       userId: req.user.id
-    });
+    }, { transaction: t });
 
+    // 3. UPDATE USER inside transaction
     req.user.totalExpense += Number(amount);
-    await req.user.save();
+    await req.user.save({ transaction: t });
 
-    res.json({
+    // 4. COMMIT if everything succeeds
+    await t.commit();
+
+    return res.json({
       message: "Expense added successfully",
       expense,
       totalExpense: req.user.totalExpense
     });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to add expense" });
+
+    // 5. ROLLBACK if anything fails
+    await t.rollback();
+
+    console.error("Transaction failed:", err);
+
+    return res.status(500).json({
+      error: "Failed to add expense (rolled back)"
+    });
   }
 };
+
+
+
+
+
+
 
 // Get all expenses
 exports.getExpenses = async (req, res) => {
@@ -89,4 +125,3 @@ exports.deleteExpense = async (req, res) => {
     res.status(500).json({ error: 'Failed to delete expense' });
   }
 };
-
