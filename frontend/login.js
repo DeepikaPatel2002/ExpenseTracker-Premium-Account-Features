@@ -48,3 +48,12 @@ document.getElementById("sendResetBtn")
       );
     }
 });
+
+document.getElementById('forgotBtn')
+.addEventListener('click', (e) => {
+
+  e.preventDefault();
+
+  document.getElementById('forgotSection')
+    .style.display = 'block';
+});

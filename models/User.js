@@ -1,7 +1,7 @@
 
 
 
-
+const ForgotPasswordRequest = require('./ForgotPasswordRequest');
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 
@@ -37,6 +37,14 @@ const User = sequelize.define('User', {
   defaultValue: 0
 }
 
+});
+
+User.hasMany(ForgotPasswordRequest, {
+  foreignKey: 'userId'
+});
+
+ForgotPasswordRequest.belongsTo(User, {
+  foreignKey: 'userId'
 });
 
 module.exports = User;

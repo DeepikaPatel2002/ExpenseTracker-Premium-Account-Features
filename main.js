@@ -5,9 +5,12 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
+const sequelize = require('./config/db');
+
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: false }));
 
 // Routes
 const expenseRoutes = require('./routes/expenseRoutes');
@@ -15,12 +18,14 @@ const userRoutes = require('./routes/userRoutes');
 const premiumRoutes = require('./routes/premiumRoutes');
 const testMailRoute = require("./routes/testMail");
 const passwordRoutes = require('./routes/passwordRoutes');
+require('./models/ForgotPasswordRequest');
 
 app.use('/password', passwordRoutes);
 app.use("/mail", testMailRoute);
 app.use('/expense', expenseRoutes);
 app.use('/user', userRoutes);
 app.use('/premium', premiumRoutes);
+
 
 
 app.post("/test-ai", async (req, res) => {
@@ -41,9 +46,19 @@ app.post("/test-ai", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+
+sequelize.sync()
+.then(() => {
+
+  app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+  });
+
+})
+.catch(err => {
+  console.log(err);
 });
+
 app.use((req, res, next) => {
   console.log("REQUEST:", req.method, req.url);
   next();
