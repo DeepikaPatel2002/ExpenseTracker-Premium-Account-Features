@@ -4,27 +4,72 @@
   <meta charset="UTF-8">
   <title>Expense Tracker</title>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <!-- Link external CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+
+  <!-- HEADER -->
   <div class="header">
-    <h2 id="welcomeMessage">Welcome, King! Thank you for being a Premium Member!</h2>
+    <h2 id="welcomeMessage">Expense Tracker Dashboard</h2>
+
     <button id="showLeaderboard">Show Leaderboard</button>
-    <button id="downloadBtn">Download Report</button>
+
+    <button id="downloadBtn">Download Report (Premium)</button>
+
     <button id="logoutBtn">Logout</button>
+
     <button id="upgradeBtn">Upgrade to Premium</button>
   </div>
 
+  <!-- REPORT DASHBOARD -->
+  <h2>Expense Report Dashboard</h2>
+
+  <!-- FILTERS -->
+  <div id="filter-bar">
+    <button onclick="setFilter('all')">All</button>
+    <button onclick="setFilter('daily')">Daily</button>
+    <button onclick="setFilter('weekly')">Weekly</button>
+    <button onclick="setFilter('monthly')">Monthly</button>
+  </div>
+
+  <br>
+
+  <!-- SUMMARY CARDS -->
+  <div class="summary">
+
+    <div class="card income">
+      <h3>Income</h3>
+      <p id="totalIncome">₹0</p>
+    </div>
+
+    <div class="card expense">
+      <h3>Expense</h3>
+      <p id="totalExpense">₹0</p>
+    </div>
+
+    <div class="card balance">
+      <h3>Balance</h3>
+      <p id="balance">₹0</p>
+    </div>
+
+  </div>
+
+  <br>
+
+  <!-- EXPENSE FORM -->
   <form id="expenseForm">
     <input type="number" id="amount" placeholder="Enter amount" required><br><br>
     <input type="text" id="description" placeholder="Enter description" required><br><br>
-    <!-- <input type="text" id="category" placeholder="Enter category" required><br><br> -->
-    <button type="submit" class="primary-btn">Add Expense</button>
+    <button type="submit">Add Expense</button>
   </form>
 
-  <h3>Expenses</h3>
-  <table>
+  <br>
+
+  <!-- EXPENSE TABLE -->
+  <h3>Transactions</h3>
+
+  <table border="1">
     <thead>
       <tr>
         <th>Amount</th>
@@ -34,11 +79,14 @@
         <th>Action</th>
       </tr>
     </thead>
+
     <tbody id="expense-list"></tbody>
   </table>
 
-  <h3>Leader Board</h3>
-  <table id="leaderboard">
+  <!-- ================= LEADERBOARD (FIX ADDED HERE) ================= -->
+  <h3>Leaderboard</h3>
+
+  <table border="1">
     <thead>
       <tr>
         <th>Rank</th>
@@ -46,11 +94,11 @@
         <th>Total Expense</th>
       </tr>
     </thead>
+
     <tbody id="leaderboard-body"></tbody>
   </table>
 
   <script src="index.js"></script>
+
 </body>
 </html>
-
-

@@ -144,3 +144,40 @@ th {
   border-top: 1px solid #ddd;
   padding-top: 15px;
 }
+
+
+.summary {
+  display: flex;
+  gap: 12px;
+  margin: 15px 0;
+  flex-wrap: wrap;
+}
+
+/* smaller, cleaner cards */
+.card {
+  flex: 1;
+  min-width: 120px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: white;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* heading inside card */
+.card h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* amount text */
+.card p {
+  margin: 5px 0 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* colors */
+.income { background: #2ecc71; }
+.expense { background: #e74c3c; }
+.balance { background: #3498db; }
