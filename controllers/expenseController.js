@@ -2,66 +2,61 @@
 
 const Expense = require('../models/Expense');
 const User = require('../models/User');
+const sequelize = require('../config/db');
 const { GoogleGenAI } = require("@google/genai");
 
 
-
-// Add expense with AI categorization
-const sequelize = require('../config/db'); // IMPORTANT
-
+// ================= ADD EXPENSE =================
 exports.addExpense = async (req, res) => {
-  const t = await sequelize.transaction(); // 1. START TRANSACTION
+  const t = await sequelize.transaction();
 
   try {
-    const { amount, description } = req.body;
+    const { amount, description, note } = req.body;
 
     let category = "Uncategorized";
 
+    // AI CATEGORY (SAFE FALLBACK)
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-try {
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [{
+          role: "user",
+          parts: [{
+            text: `Return ONLY ONE WORD category for this expense: ${description}`
+          }]
+        }]
+      });
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: [{
-      role: "user",
-      parts: [{
-        text: `Return ONLY ONE WORD category for this expense: ${description}`
-      }]
-    }]
-  });
+      category =
+        response.text ||
+        response.candidates?.[0]?.content?.parts?.[0]?.text ||
+        "Uncategorized";
 
-  console.log("FULL AI RESPONSE:", JSON.stringify(response, null, 2));
+      if (category.includes("\n")) {
+        category = category.split("\n")[0];
+      }
 
-  category =
-    response.text ||
-    response.candidates?.[0]?.content?.parts?.[0]?.text ||
-    "Uncategorized";
+      category = category.replace(/[^a-zA-Z]/g, "").trim();
 
-  if (category.includes("\n")) {
-    category = category.split("\n")[0];
-  }
+    } catch (err) {
+      console.error("AI failed:", err);
+    }
 
-  category = category.replace(/[^a-zA-Z]/g, "").trim();
-
-} catch (err) {
-  console.error("AI failed:", err);
-}
-
-
-    // 2. CREATE EXPENSE inside transaction
+    // CREATE EXPENSE
     const expense = await Expense.create({
       amount,
       description,
       category,
+      note, //  NEW FIELD ADDED
       userId: req.user.id
     }, { transaction: t });
 
-    // 3. UPDATE USER inside transaction
+    // UPDATE USER TOTAL
     req.user.totalExpense += Number(amount);
     await req.user.save({ transaction: t });
 
-    // 4. COMMIT if everything succeeds
     await t.commit();
 
     return res.json({
@@ -71,8 +66,6 @@ try {
     });
 
   } catch (err) {
-
-    // 5. ROLLBACK if anything fails
     await t.rollback();
 
     console.error("Transaction failed:", err);
@@ -84,11 +77,13 @@ try {
 };
 
 
-
-// Get all expenses
+// ================= GET EXPENSES =================
 exports.getExpenses = async (req, res) => {
   try {
-    const expenses = await Expense.findAll({ where: { userId: req.user.id } });
+    const expenses = await Expense.findAll({
+      where: { userId: req.user.id }
+    });
+
     res.json(expenses);
   } catch (err) {
     console.error(err);
@@ -96,26 +91,34 @@ exports.getExpenses = async (req, res) => {
   }
 };
 
-// Delete expense
+
+// ================= DELETE EXPENSE =================
 exports.deleteExpense = async (req, res) => {
   try {
     const expense = await Expense.findOne({
-      where: { id: req.params.id, userId: req.user.id }
+      where: {
+        id: req.params.id,
+        userId: req.user.id
+      }
     });
 
     if (!expense) {
       return res.status(404).json({ error: 'Expense not found' });
     }
 
-    req.user.totalExpense = Math.max(0, req.user.totalExpense - Number(expense.amount));
-    await req.user.save();
+    req.user.totalExpense = Math.max(
+      0,
+      req.user.totalExpense - Number(expense.amount)
+    );
 
+    await req.user.save();
     await expense.destroy();
 
-    res.json({ 
-      message: 'Expense deleted successfully', 
-      totalExpense: req.user.totalExpense 
+    res.json({
+      message: 'Expense deleted successfully',
+      totalExpense: req.user.totalExpense
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to delete expense' });

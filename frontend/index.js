@@ -2,17 +2,35 @@ let allExpenses = [];
 let currentFilter = "all";
 let isPremiumUser = false;
 
+// ================= TOKEN PARSE =================
+function parseToken() {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+
+  try {
+    return JSON.parse(atob(token.split(".")[1]));
+  } catch (e) {
+    return null;
+  }
+}
+
 // ================= PAGINATION =================
 let currentPage = 1;
 let limit = Number(localStorage.getItem("limit")) || 10;
+
+// detect premium from token
+const tokenData = parseToken();
+if (tokenData?.isPremiumUser) {
+  isPremiumUser = true;
+}
 
 // ================= INIT =================
 window.addEventListener("DOMContentLoaded", () => {
   attachEvents();
   loadExpenses();
 
-  // set dropdown value from storage
   const limitSelect = document.getElementById("limitSelect");
+
   if (limitSelect) {
     limitSelect.value = limit;
 
@@ -20,7 +38,7 @@ window.addEventListener("DOMContentLoaded", () => {
       limit = Number(e.target.value);
       localStorage.setItem("limit", limit);
 
-      currentPage = 1; // reset page
+      currentPage = 1;
       render();
     });
   }
@@ -30,14 +48,17 @@ window.addEventListener("DOMContentLoaded", () => {
 function attachEvents() {
 
   // LEADERBOARD
-  document.getElementById("showLeaderboard").addEventListener("click", async () => {
+  document.getElementById("showLeaderboard")?.addEventListener("click", async () => {
     const token = localStorage.getItem("token");
 
-    const res = await axios.get("http://localhost:4000/premium/leaderboard", {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const res = await axios.get(
+      "http://localhost:4000/premium/leaderboard",
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
     const body = document.getElementById("leaderboard-body");
+    if (!body) return;
+
     body.innerHTML = "";
 
     res.data.forEach((u, i) => {
@@ -52,19 +73,19 @@ function attachEvents() {
   });
 
   // DOWNLOAD
-  document.getElementById("downloadBtn").addEventListener("click", () => {
+  document.getElementById("downloadBtn")?.addEventListener("click", () => {
 
     if (!isPremiumUser) {
-      alert("Premium feature. Upgrade required.");
+      alert("Upgrade to premium to download report");
       return;
     }
 
     const data = filterData();
 
-    let csv = "Type,Amount,Category,Description,Date\n";
+    let csv = "Type,Amount,Category,Description,Note,Date\n";
 
     data.forEach(item => {
-      csv += `${item.type || "expense"},${item.amount},${item.category || "-"},${item.description},${item.createdAt}\n`;
+      csv += `${item.type || "expense"},${item.amount},${item.category || "-"},${item.description},${item.note || "-"},${item.createdAt}\n`;
     });
 
     const blob = new Blob([csv], { type: "text/csv" });
@@ -77,13 +98,13 @@ function attachEvents() {
   });
 
   // LOGOUT
-  document.getElementById("logoutBtn").addEventListener("click", () => {
+  document.getElementById("logoutBtn")?.addEventListener("click", () => {
     localStorage.removeItem("token");
     window.location.href = "login.html";
   });
 
   // UPGRADE
-  document.getElementById("upgradeBtn").addEventListener("click", async () => {
+  document.getElementById("upgradeBtn")?.addEventListener("click", async () => {
     const token = localStorage.getItem("token");
 
     try {
@@ -94,24 +115,24 @@ function attachEvents() {
       );
 
       isPremiumUser = true;
-      alert("Upgraded to Premium successfully!");
+      alert("Upgraded successfully!");
     } catch (err) {
       alert("Upgrade failed");
     }
   });
 
   // FORM
-  document.getElementById("expenseForm").addEventListener("submit", addExpense);
+  document.getElementById("expenseForm")?.addEventListener("submit", addExpense);
 
-  // PAGINATION BUTTONS
-  document.getElementById("prevBtn").addEventListener("click", () => {
+  // PAGINATION
+  document.getElementById("prevBtn")?.addEventListener("click", () => {
     if (currentPage > 1) {
       currentPage--;
       render();
     }
   });
 
-  document.getElementById("nextBtn").addEventListener("click", () => {
+  document.getElementById("nextBtn")?.addEventListener("click", () => {
     const data = filterData();
     const totalPages = Math.ceil(data.length / limit);
 
@@ -142,17 +163,18 @@ async function addExpense(e) {
 
   const amount = document.getElementById("amount").value;
   const description = document.getElementById("description").value;
+  const note = document.getElementById("note")?.value || "";
 
   const res = await axios.post(
     "http://localhost:4000/expense/add",
-    { amount, description },
+    { amount, description, note },
     { headers: { Authorization: `Bearer ${token}` } }
   );
 
   allExpenses.push(res.data.expense);
-
-  currentPage = 1; // reset page after add
   render();
+
+  document.getElementById("expenseForm").reset();
 }
 
 // ================= FILTER =================
@@ -192,13 +214,15 @@ function filterData() {
 function render() {
 
   const tbody = document.getElementById("expense-list");
+  if (!tbody) return;
+
   tbody.innerHTML = "";
 
   const data = filterData();
 
-  const totalPages = Math.ceil(data.length / limit);
+  const totalPages = Math.ceil(data.length / limit) || 1;
 
-  if (currentPage > totalPages) currentPage = totalPages || 1;
+  if (currentPage > totalPages) currentPage = totalPages;
 
   const start = (currentPage - 1) * limit;
   const end = start + limit;
@@ -222,6 +246,7 @@ function render() {
       <td>${item.amount}</td>
       <td>${item.category || "-"}</td>
       <td>${item.description}</td>
+      <td>${item.note || "-"}</td>
       <td>${new Date(item.createdAt).toLocaleString()}</td>
       <td><button onclick="deleteItem('${item.id || item._id}')">Delete</button></td>
     `;
@@ -233,23 +258,34 @@ function render() {
   document.getElementById("totalExpense").innerText = "₹" + expense;
   document.getElementById("balance").innerText = "₹" + (income - expense);
 
-  // pagination UI
-  document.getElementById("pageInfo").innerText =
-    `Page ${currentPage} of ${totalPages || 1}`;
+  const pageInfo = document.getElementById("pageInfo");
 
-  document.getElementById("prevBtn").disabled = currentPage === 1;
-  document.getElementById("nextBtn").disabled =
-    currentPage === totalPages || totalPages === 0;
+  if (pageInfo) {
+    pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
+  }
+
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+
+  if (prevBtn) prevBtn.disabled = currentPage === 1;
+  if (nextBtn) nextBtn.disabled = currentPage === totalPages;
 }
 
 // ================= DELETE =================
 async function deleteItem(id) {
   const token = localStorage.getItem("token");
 
-  await axios.delete(`http://localhost:4000/expense/delete/${id}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  try {
+    await axios.delete(
+      `http://localhost:4000/expense/delete/${id}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-  allExpenses = allExpenses.filter(e => (e.id || e._id) != id);
-  render();
+    allExpenses = allExpenses.filter(e => (e.id || e._id) != id);
+    render();
+
+  } catch (err) {
+    console.log(err);
+    alert("Delete failed");
+  }
 }

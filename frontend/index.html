@@ -14,7 +14,7 @@
     <h2>Expense Tracker Dashboard</h2>
 
     <button id="showLeaderboard">Leaderboard</button>
-    <button id="downloadBtn">Download Report</button>
+    <button id="downloadBtn">Download Report (Premium)</button>
     <button id="logoutBtn">Logout</button>
     <button id="upgradeBtn">Upgrade to Premium</button>
   </div>
@@ -55,6 +55,10 @@
   <form id="expenseForm">
     <input type="number" id="amount" placeholder="Amount" required><br><br>
     <input type="text" id="description" placeholder="Description" required><br><br>
+
+    <!--  NEW FIELD -->
+    <input type="text" id="note" placeholder="Note (optional)"><br><br>
+
     <button type="submit">Add</button>
   </form>
 
@@ -67,6 +71,7 @@
         <th>Amount</th>
         <th>Category</th>
         <th>Description</th>
+        <th>Note</th> <!-- NEW -->
         <th>Date</th>
         <th>Action</th>
       </tr>
@@ -80,15 +85,13 @@
   <!-- PAGINATION -->
   <div id="pagination" style="text-align:center; margin-top:15px;">
     <button id="prevBtn">Prev</button>
-
     <span id="pageInfo" style="margin: 0 10px;"></span>
-
     <button id="nextBtn">Next</button>
   </div>
 
   <br>
 
-  <!-- PAGE SIZE SELECTOR -->
+  <!-- PAGE SIZE -->
   <div style="text-align:center;">
     <label>Items per page: </label>
     <select id="limitSelect">
