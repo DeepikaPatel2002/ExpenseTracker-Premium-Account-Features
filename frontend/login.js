@@ -19,3 +19,32 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   }
 });
 
+
+
+document.getElementById("sendResetBtn")
+  .addEventListener("click", async () => {
+
+    const email =
+      document.getElementById("forgotEmail").value;
+
+    try {
+
+      const res = await axios.post(
+        "http://localhost:4000/password/forgotpassword",
+        { email }
+      );
+
+      console.log(res.data);
+
+      alert(res.data.message);
+
+    } catch (err) {
+
+      console.error(err.response?.data || err);
+
+      alert(
+        err.response?.data?.message ||
+        "Failed to send email"
+      );
+    }
+});

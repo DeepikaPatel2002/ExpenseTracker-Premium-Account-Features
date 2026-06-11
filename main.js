@@ -13,7 +13,11 @@ app.use(bodyParser.json());
 const expenseRoutes = require('./routes/expenseRoutes');
 const userRoutes = require('./routes/userRoutes');
 const premiumRoutes = require('./routes/premiumRoutes');
+const testMailRoute = require("./routes/testMail");
+const passwordRoutes = require('./routes/passwordRoutes');
 
+app.use('/password', passwordRoutes);
+app.use("/mail", testMailRoute);
 app.use('/expense', expenseRoutes);
 app.use('/user', userRoutes);
 app.use('/premium', premiumRoutes);
@@ -40,4 +44,7 @@ const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
-
+app.use((req, res, next) => {
+  console.log("REQUEST:", req.method, req.url);
+  next();
+});

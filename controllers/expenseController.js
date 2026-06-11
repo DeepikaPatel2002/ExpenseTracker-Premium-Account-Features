@@ -85,10 +85,6 @@ try {
 
 
 
-
-
-
-
 // Get all expenses
 exports.getExpenses = async (req, res) => {
   try {

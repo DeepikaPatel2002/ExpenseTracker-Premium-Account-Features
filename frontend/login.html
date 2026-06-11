@@ -1,23 +1,72 @@
-
-
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Login</title>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+
+    
+    <link rel="stylesheet" href="style.css">
+
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
-  <h2>Login</h2>
-  <form id="loginForm">
-    <input type="email" id="email" placeholder="Enter email" required><br><br>
-    <input type="password" id="password" placeholder="Enter password" required><br><br>
-    <button type="submit">Login</button>
-  </form>
 
-  <script src="login.js"></script>
+    <div class="auth-container">
+
+        <h2>Login</h2>
+
+        <form id="loginForm">
+
+            <input
+                type="email"
+                id="email"
+                placeholder="Enter email"
+                required
+            >
+
+            <input
+                type="password"
+                id="password"
+                placeholder="Enter password"
+                required
+            >
+
+            <button type="submit">
+                Login
+            </button>
+
+        </form>
+
+        <div class="forgot-password">
+
+            <h3>Forgot Password</h3>
+
+            <input
+                type="email"
+                id="forgotEmail"
+                placeholder="Enter your email"
+            >
+
+            <button
+                type="button"
+                id="sendResetBtn"
+            >
+                Send Reset Email
+            </button>
+
+        </div>
+
+        <div class="auth-link">
+            <a href="signup.html">
+                Don't have an account? Sign Up
+            </a>
+        </div>
+
+    </div>
+
+    <script src="login.js"></script>
+
 </body>
 </html>

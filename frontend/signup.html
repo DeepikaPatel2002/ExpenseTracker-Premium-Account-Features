@@ -1,37 +1,93 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Signup</title>
+
+  <link rel="stylesheet" href="style.css">
+
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
-  <h2>Signup</h2>
-  <form id="signupForm">
-    <input type="text" id="username" placeholder="Enter username" required><br><br>
-    <input type="email" id="email" placeholder="Enter email" required><br><br>
-    <input type="password" id="password" placeholder="Enter password" required><br><br>
-    <button type="submit">Signup</button>
-  </form>
+
+  <div class="auth-container">
+
+    <h2>Signup</h2>
+
+    <form id="signupForm">
+
+      <input
+        type="text"
+        id="username"
+        placeholder="Enter username"
+        required
+      >
+
+      <input
+        type="email"
+        id="email"
+        placeholder="Enter email"
+        required
+      >
+
+      <input
+        type="password"
+        id="password"
+        placeholder="Enter password"
+        required
+      >
+
+      <button type="submit">
+        Signup
+      </button>
+
+    </form>
+
+    <div class="auth-link">
+      <a href="login.html">
+        Already have an account? Login
+      </a>
+    </div>
+
+  </div>
 
   <script>
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+
       const username = document.getElementById('username').value;
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
 
       try {
-        const res = await axios.post('http://localhost:4000/user/signup', {
-          username, email, password
-        });
+
+        await axios.post(
+          'http://localhost:4000/user/signup',
+          {
+            username,
+            email,
+            password
+          }
+        );
+
         alert('Signup successful! Now login with your new account.');
+
         window.location.href = "login.html";
+
       } catch (err) {
-        console.error("Signup error:", err.response ? err.response.data : err);
+
+        console.error(
+          "Signup error:",
+          err.response ? err.response.data : err
+        );
+
         alert('Signup failed');
       }
     });
   </script>
+
 </body>
 </html>
+
