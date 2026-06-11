@@ -1,19 +1,32 @@
-
 let allExpenses = [];
 let currentFilter = "all";
 let isPremiumUser = false;
 
-// PAGINATION
+// ================= PAGINATION =================
 let currentPage = 1;
-const limit = 10;
+let limit = Number(localStorage.getItem("limit")) || 10;
 
-// INIT
+// ================= INIT =================
 window.addEventListener("DOMContentLoaded", () => {
-  loadExpenses();
   attachEvents();
+  loadExpenses();
+
+  // set dropdown value from storage
+  const limitSelect = document.getElementById("limitSelect");
+  if (limitSelect) {
+    limitSelect.value = limit;
+
+    limitSelect.addEventListener("change", (e) => {
+      limit = Number(e.target.value);
+      localStorage.setItem("limit", limit);
+
+      currentPage = 1; // reset page
+      render();
+    });
+  }
 });
 
-// EVENTS
+// ================= EVENTS =================
 function attachEvents() {
 
   // LEADERBOARD
@@ -90,33 +103,26 @@ function attachEvents() {
   // FORM
   document.getElementById("expenseForm").addEventListener("submit", addExpense);
 
-  // PAGINATION
-  const prevBtn = document.getElementById("prevBtn");
-  const nextBtn = document.getElementById("nextBtn");
+  // PAGINATION BUTTONS
+  document.getElementById("prevBtn").addEventListener("click", () => {
+    if (currentPage > 1) {
+      currentPage--;
+      render();
+    }
+  });
 
-  if (prevBtn) {
-    prevBtn.addEventListener("click", () => {
-      if (currentPage > 1) {
-        currentPage--;
-        render();
-      }
-    });
-  }
+  document.getElementById("nextBtn").addEventListener("click", () => {
+    const data = filterData();
+    const totalPages = Math.ceil(data.length / limit);
 
-  if (nextBtn) {
-    nextBtn.addEventListener("click", () => {
-      const data = filterData();
-      const totalPages = Math.ceil(data.length / limit);
-
-      if (currentPage < totalPages) {
-        currentPage++;
-        render();
-      }
-    });
-  }
+    if (currentPage < totalPages) {
+      currentPage++;
+      render();
+    }
+  });
 }
 
-// LOAD
+// ================= LOAD =================
 async function loadExpenses() {
   const token = localStorage.getItem("token");
 
@@ -128,7 +134,7 @@ async function loadExpenses() {
   render();
 }
 
-// ADD
+// ================= ADD =================
 async function addExpense(e) {
   e.preventDefault();
 
@@ -144,17 +150,19 @@ async function addExpense(e) {
   );
 
   allExpenses.push(res.data.expense);
+
+  currentPage = 1; // reset page after add
   render();
 }
 
-// FILTER
+// ================= FILTER =================
 function setFilter(type) {
   currentFilter = type;
   currentPage = 1;
   render();
 }
 
-// FILTER DATA
+// ================= FILTER DATA =================
 function filterData() {
   const today = new Date();
 
@@ -180,7 +188,7 @@ function filterData() {
   });
 }
 
-// RENDER
+// ================= RENDER =================
 function render() {
 
   const tbody = document.getElementById("expense-list");
@@ -190,11 +198,7 @@ function render() {
 
   const totalPages = Math.ceil(data.length / limit);
 
-  if (totalPages === 0) {
-    currentPage = 1;
-  } else if (currentPage > totalPages) {
-    currentPage = totalPages;
-  }
+  if (currentPage > totalPages) currentPage = totalPages || 1;
 
   const start = (currentPage - 1) * limit;
   const end = start + limit;
@@ -225,38 +229,27 @@ function render() {
     tbody.appendChild(tr);
   });
 
-  // SUMMARY
   document.getElementById("totalIncome").innerText = "₹" + income;
   document.getElementById("totalExpense").innerText = "₹" + expense;
   document.getElementById("balance").innerText = "₹" + (income - expense);
 
-  // PAGINATION UI (SAFE)
-  const pageInfo = document.getElementById("pageInfo");
-  const prevBtn = document.getElementById("prevBtn");
-  const nextBtn = document.getElementById("nextBtn");
+  // pagination UI
+  document.getElementById("pageInfo").innerText =
+    `Page ${currentPage} of ${totalPages || 1}`;
 
-  if (pageInfo) {
-    pageInfo.innerText = `Page ${currentPage} of ${totalPages || 1}`;
-  }
-
-  if (prevBtn) prevBtn.disabled = currentPage === 1;
-  if (nextBtn) nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+  document.getElementById("prevBtn").disabled = currentPage === 1;
+  document.getElementById("nextBtn").disabled =
+    currentPage === totalPages || totalPages === 0;
 }
 
-// DELETE
+// ================= DELETE =================
 async function deleteItem(id) {
   const token = localStorage.getItem("token");
 
-  try {
-    await axios.delete(`http://localhost:4000/expense/delete/${id}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+  await axios.delete(`http://localhost:4000/expense/delete/${id}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
 
-    allExpenses = allExpenses.filter(e => (e.id || e._id) != id);
-    render();
-
-  } catch (err) {
-    console.log(err);
-    alert("Delete failed");
-  }
+  allExpenses = allExpenses.filter(e => (e.id || e._id) != id);
+  render();
 }
