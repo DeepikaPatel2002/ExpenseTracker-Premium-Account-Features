@@ -3,6 +3,10 @@ let allExpenses = [];
 let currentFilter = "all";
 let isPremiumUser = false;
 
+// PAGINATION
+let currentPage = 1;
+const limit = 10;
+
 // INIT
 window.addEventListener("DOMContentLoaded", () => {
   loadExpenses();
@@ -65,30 +69,51 @@ function attachEvents() {
     window.location.href = "login.html";
   });
 
-  // UPGRADE (MOCK)
+  // UPGRADE
   document.getElementById("upgradeBtn").addEventListener("click", async () => {
-  const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-  try {
-    await axios.post(
-      "http://localhost:4000/user/upgrade",
-      {},
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    try {
+      await axios.post(
+        "http://localhost:4000/user/upgrade",
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    // FRONTEND FORCE UPDATE
-    isPremiumUser = true;
-
-    alert("Upgraded to Premium successfully!");
-  } catch (err) {
-    alert("Upgrade failed");
-  }
-});
-
-
+      isPremiumUser = true;
+      alert("Upgraded to Premium successfully!");
+    } catch (err) {
+      alert("Upgrade failed");
+    }
+  });
 
   // FORM
   document.getElementById("expenseForm").addEventListener("submit", addExpense);
+
+  // PAGINATION
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+      if (currentPage > 1) {
+        currentPage--;
+        render();
+      }
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      const data = filterData();
+      const totalPages = Math.ceil(data.length / limit);
+
+      if (currentPage < totalPages) {
+        currentPage++;
+        render();
+      }
+    });
+  }
 }
 
 // LOAD
@@ -99,7 +124,7 @@ async function loadExpenses() {
     headers: { Authorization: `Bearer ${token}` }
   });
 
-  allExpenses = res.data;
+  allExpenses = res.data || [];
   render();
 }
 
@@ -125,10 +150,11 @@ async function addExpense(e) {
 // FILTER
 function setFilter(type) {
   currentFilter = type;
+  currentPage = 1;
   render();
 }
 
-// FILTER LOGIC
+// FILTER DATA
 function filterData() {
   const today = new Date();
 
@@ -162,10 +188,23 @@ function render() {
 
   const data = filterData();
 
+  const totalPages = Math.ceil(data.length / limit);
+
+  if (totalPages === 0) {
+    currentPage = 1;
+  } else if (currentPage > totalPages) {
+    currentPage = totalPages;
+  }
+
+  const start = (currentPage - 1) * limit;
+  const end = start + limit;
+
+  const paginatedData = data.slice(start, end);
+
   let income = 0;
   let expense = 0;
 
-  data.forEach(item => {
+  paginatedData.forEach(item => {
 
     const amount = Number(item.amount);
     const type = item.type || "expense";
@@ -180,25 +219,44 @@ function render() {
       <td>${item.category || "-"}</td>
       <td>${item.description}</td>
       <td>${new Date(item.createdAt).toLocaleString()}</td>
-      <td><button onclick="deleteItem('${item.id}')">Delete</button></td>
+      <td><button onclick="deleteItem('${item.id || item._id}')">Delete</button></td>
     `;
 
     tbody.appendChild(tr);
   });
 
+  // SUMMARY
   document.getElementById("totalIncome").innerText = "₹" + income;
   document.getElementById("totalExpense").innerText = "₹" + expense;
   document.getElementById("balance").innerText = "₹" + (income - expense);
+
+  // PAGINATION UI (SAFE)
+  const pageInfo = document.getElementById("pageInfo");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+
+  if (pageInfo) {
+    pageInfo.innerText = `Page ${currentPage} of ${totalPages || 1}`;
+  }
+
+  if (prevBtn) prevBtn.disabled = currentPage === 1;
+  if (nextBtn) nextBtn.disabled = currentPage === totalPages || totalPages === 0;
 }
 
 // DELETE
 async function deleteItem(id) {
   const token = localStorage.getItem("token");
 
-  await axios.delete(`http://localhost:4000/expense/delete/${id}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  try {
+    await axios.delete(`http://localhost:4000/expense/delete/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
 
-  allExpenses = allExpenses.filter(e => e.id !== id);
-  render();
+    allExpenses = allExpenses.filter(e => (e.id || e._id) != id);
+    render();
+
+  } catch (err) {
+    console.log(err);
+    alert("Delete failed");
+  }
 }

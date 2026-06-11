@@ -181,3 +181,18 @@ th {
 .income { background: #2ecc71; }
 .expense { background: #e74c3c; }
 .balance { background: #3498db; }
+
+
+
+.delete-btn {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background-color: #c0392b;
+}
